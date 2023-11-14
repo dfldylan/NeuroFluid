@@ -83,12 +83,12 @@ DATASET_NAME is one element of [bunny, watercube, watersphere, honeycone].
 ## Run the training script
 1. Warm-up stage
 ```bash
-CUDA_VISIBLE_DEVICES=3 python train_renderer.py --expdir exps/watercube --expname scale-1.0/warmup --dataset watercube --config configs/watercube_warmup.yaml 
+python train_renderer.py --expdir exps/watercube --expname scale-1.0/warmup --dataset watercube --config configs/warmup.yaml 
 ```
 
 2. End2end stage
 ```bash 
-CUDA_VISIBLE_DEVICES=0 python train_e2e.py --expdir exps/watercube --expname scale-1.0/e2e --dataset watercube --config configs/watercube_e2e.yaml 
+python train_e2e.py --expdir exps/watercube --expname scale-1.0/e2e --dataset watercube --config configs/end2end.yaml 
 ```
 
 ## Fetch data
