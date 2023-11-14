@@ -1,0 +1,4 @@
+# move to config_path.yaml before running
+DATA_ROOT: # Root directory for storing operational data.
+DATASETS_ROOT: # The root directory for storing datasets.
+SIMULATOR_BIN: # Set this variable to the path of the DynamicBoundarySimulator binary

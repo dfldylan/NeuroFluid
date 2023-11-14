@@ -9,14 +9,14 @@ watercube:
   train:
     start_index: 0
     end_index: 50
-    path: /data/syguan/fluid_simulation/release/data_release/watercube
+    path: watercube
     views:
       warmup: [view_1,view_2,view_3,view_4]
       dynamic: [view_1]
   test:
     start_index: 0
     end_index: 60
-    path: /data/syguan/fluid_simulation/release/data_release/watercube
+    path: watercube
     views: [view_5]
 
 watersphere:
@@ -30,14 +30,14 @@ watersphere:
   train:
     start_index: 0
     end_index: 50
-    path: /data/syguan/fluid_simulation/release/data_release/watersphere
+    path: watersphere
     views:
       warmup: [view_1,view_2,view_3,view_4]
       dynamic: [view_1]
   test:
     start_index: 0
     end_index: 60
-    path: /data/syguan/fluid_simulation/release/data_release/watersphere
+    path: watersphere
     views: [view_5]
 
 honeycone:
@@ -51,12 +51,12 @@ honeycone:
   train:
     start_index: 15
     end_index: 65
-    path: /data/syguan/fluid_simulation/release/data_release/honeycone
+    path: honeycone
     views:
       warmup: [view_1,view_2,view_3,view_4]
       dynamic: [view_1]
   test:
     start_index: 0
     end_index: 60
-    path: /data/syguan/fluid_simulation/release/data_release/honeycone
+    path: honeycone
     views: [view_5]

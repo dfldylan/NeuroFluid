@@ -5,7 +5,9 @@ Config
 import os
 import argparse
 from typing import Dict
+import yaml
 from yacs.config import CfgNode as CN
+_GC = CN(yaml.safe_load(open('config_path.yaml')))
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--expdir', type=str, default='exps', help='experiment dir')
@@ -13,11 +15,13 @@ parser.add_argument('--expname', type=str, default='debug', help='experiment nam
 parser.add_argument('--dataset', type=str, default='', help='dataset')
 parser.add_argument('--config', type=str, default='', help='default config file')
 parser.add_argument('--resume_from', type=str, default='', help='path of ckpt to be load')
+args = parser.parse_args()
+if not os.path.isabs(args.expdir):
+    args.expdir = os.path.join(_GC.DATA_ROOT, args.expdir)
 
 _C = CN(new_allowed=True)
 
-def _parse_args(parser) -> Dict:
-    args = parser.parse_args()
+def _parse_args() -> Dict:
     return vars(args)
 
 
@@ -72,7 +76,7 @@ def end2end_training_config() -> CN:
     Returns:
       CfgNode: end2end traning config as a yacs CfgNode object.
     """
-    cfg_argparse = _parse_args(parser)
+    cfg_argparse = _parse_args()
     if cfg_argparse['config'] == '':
         config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'end2end.yaml')
     else:
@@ -94,7 +98,7 @@ def nerf_training_config() -> CN:
     Returns:
       CfgNode: NeRF traning config as a yacs CfgNode object.
     """
-    cfg_argparse = _parse_args(parser)
+    cfg_argparse = _parse_args()
     if cfg_argparse['config'] == '':
         config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'nerf.yaml')
     else:
@@ -117,7 +121,7 @@ def warmup_training_config() -> CN:
     Returns:
       CfgNode: warmup traning config as a yacs CfgNode object.
     """
-    cfg_argparse = _parse_args(parser)
+    cfg_argparse = _parse_args()
     if cfg_argparse['config'] == '':
         config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'warmup.yaml')
     else:
@@ -141,7 +145,7 @@ def transmodel_config() -> CN:
     Returns:
       CfgNode: transmodel config as a yacs CfgNode object.
     """
-    cfg_argparse = _parse_args(parser)
+    cfg_argparse = _parse_args()
     if cfg_argparse['config'] == '':
         config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'transmodel.yaml')
     else:

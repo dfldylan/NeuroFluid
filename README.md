@@ -51,6 +51,15 @@ NeuroFluid is implemented and tested on Ubuntu 18.04 with python == 3.7 and cuda
 ## Generate data
 See [this guide](data_generation/README.md) to generate fluid data.
 
+## Before Running
+- Move config_path_template.yaml to config_path.yaml
+- Specify the corresponding path
+```yaml
+DATA_ROOT: # Root directory for storing operational data.
+DATASETS_ROOT: # The root directory for storing datasets.
+SIMULATOR_BIN: # Set this variable to the path of the DynamicBoundarySimulator binary
+```
+
 ## Running the pretrained model
 - Evaluate NeuroFluid:
 ```bash 

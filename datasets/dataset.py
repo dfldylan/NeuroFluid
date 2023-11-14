@@ -11,6 +11,9 @@ import joblib
 import numpy as np
 import os.path as osp
 from PIL import Image
+import yaml
+from yacs.config import CfgNode as CN
+_GC = CN(yaml.safe_load(open('config_path.yaml')))
 
 import torch
 from torch.utils.data import Dataset
@@ -31,6 +34,8 @@ class BlenderDataset(Dataset):
         self.img_wh = (imgW, imgH)
         self.img_scale = imgscale
         assert self.img_wh[0] == self.img_wh[1], 'image width should be equal to image height'
+        if not os.path.isabs(root_dir):
+            root_dir = os.path.join(_GC.DATASETS_ROOT, root_dir)
         self.root_dir = root_dir #cfg.data_path
         self.transforms = T.ToTensor()
         # self.view_num = len(self.viewnames)
