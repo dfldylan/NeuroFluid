@@ -34,14 +34,18 @@ NeuroFluid is implemented and tested on Ubuntu 18.04 with python == 3.7 and cuda
     pip install -r requirements.txt
     pip install -r requirements-torch-cuda.txt
     ```
-3. Install Pytorch3D
+3. Install system dependency for Open3D
+    ```bash
+    sudo apt install -y libgl-dev
+    ```
+4. Install Pytorch3D
     ```bash
     conda install -c fvcore -c iopath -c conda-forge fvcore iopath
     conda install -c bottler nvidiacub
     wget -c https://github.com/facebookresearch/pytorch3d/archive/refs/tags/v0.6.1.tar.gz
     tar -xf v0.6.1.tar.gz && cd pytorch3d-0.6.1 && pip install -e .
     ```
-4. install other dependencies
+5. Install other dependencies
     ```bash
     pip install -r requirements.txt
     ```
