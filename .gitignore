@@ -7,3 +7,4 @@ random*.ipynb
 *_nerf.py
 _configs
 config_path.yaml
+.DS_Store

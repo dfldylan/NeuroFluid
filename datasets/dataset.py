@@ -33,7 +33,7 @@ class BlenderDataset(Dataset):
         self.split = split
         self.img_wh = (imgW, imgH)
         self.img_scale = imgscale
-        assert self.img_wh[0] == self.img_wh[1], 'image width should be equal to image height'
+        # assert self.img_wh[0] == self.img_wh[1], 'image width should be equal to image height'
         if not os.path.isabs(root_dir):
             root_dir = os.path.join(_GC.DATASETS_ROOT, root_dir)
         self.root_dir = root_dir #cfg.data_path
@@ -53,8 +53,8 @@ class BlenderDataset(Dataset):
             self.all_cw_mv.append(all_cw_i)
             self.focal_mv.append(focal_i)
             if iii == 0:
-                self.particles_poss_mv.append(np.stack(particles_poss_i, 0))
-                self.particles_vels_mv.append(np.stack(particles_vels_i, 0))
+                self.particles_poss_mv.append(np.stack(particles_poss_i[0:1], 0))
+                self.particles_vels_mv.append(np.stack(particles_vels_i[0:1], 0))
         self.all_rays_mv = np.stack(self.all_rays_mv, 0)
         self.all_rgbs_mv = np.stack(self.all_rgbs_mv, 0)
         self.all_cw_mv = np.stack(self.all_cw_mv, 0)
@@ -62,7 +62,7 @@ class BlenderDataset(Dataset):
         self.particles_poss_mv = np.stack(self.particles_poss_mv, 0)
         self.particles_vels_mv = np.stack(self.particles_vels_mv, 0)
         # import ipdb;ipdb.set_trace()
-        
+
 
     def _read_meta(self, root_dir):
         """
@@ -70,7 +70,7 @@ class BlenderDataset(Dataset):
         """
         with open(os.path.join(root_dir, f'transforms_{self.split}.json'), 'r') as f:
             self.meta = json.load(f)
-    
+
         # parse
         # if self.half_res:
         #     W, H = self.img_wh[0] //2, self.img_wh[1] //2
@@ -109,9 +109,12 @@ class BlenderDataset(Dataset):
             image = Image.open(image_path)
             # if self.half_res:
             image = image.resize((int(self.img_wh[0]// self.img_scale), int(self.img_wh[1]// self.img_scale)), Image.ANTIALIAS)
-            image = (np.asarray(image))/ 255.
-            image = image.reshape(-1, 4)
-            image = image[:, :3]*image[:, -1:] + (1-image[:, -1:])
+            image = (np.asarray(image)) / 255.
+            if image.shape[-1] == 4:
+                image = image.reshape(-1, 4)
+                image = image[:, :3] * image[:, -1:] + (1 - image[:, -1:])
+            else:
+                image = image.reshape(-1, 3)
             # image = self.transforms(image)
             # image = image.view(4, -1).permute(1,0) #(H*W, 4), RGBA image
             # image = image[:, :3]*image[:, -1:] + (1-image[:, -1:]) # blend A to RGB, assume white background. 
@@ -122,18 +125,24 @@ class BlenderDataset(Dataset):
         return all_rays, all_rgbs, all_cw, focal, particle_poss, particle_vels
         # return all_rays, all_rgbs, all_cw, focal, particles_path
 
-
     def read_box(self):
         bbox_path = self.meta['bounding_box']
-        box_info = joblib.load(osp.join(self.root_dir, bbox_path))
-        self.box = box_info['box']
-        self.box_normals = box_info['box_normals']
-
+        if bbox_path.endswith('.pt'):
+            box_info = joblib.load(os.path.join(self.root_dir, bbox_path))
+            self.box = box_info['box']
+            self.box_normals = box_info['box_normals']
+        elif bbox_path.endswith('.npz'):
+            box_info = np.load(os.path.join(self.root_dir, bbox_path))
+            self.box = box_info['box']
+            self.box_normals = np.zeros_like(self.box)
+        else:
+            raise ValueError("Unsupported file extension")
 
     def _read_particles(self, particle_path):
         """
         read initial particle information and the bounding box information
         """
+        particle_path = os.path.normpath(particle_path)
         if self.data_type == 'blender':
             # particle_info = np.load(osp.join(self.root_dir, self.split, particle_path))
             # with open(osp.join(self.root_dir, self.split, particle_path), 'rb') as fp:
@@ -143,16 +152,33 @@ class BlenderDataset(Dataset):
             particle_vel = np.array(particle_info['velocity']).reshape(-1, 3)
         elif self.data_type == 'splishsplash':
             # particle_info = np.load(osp.join(self.root_dir, self.split, particle_path))
-            particle_info = np.load(particle_path)
-            particle_pos = particle_info['pos']
-            particle_vel = particle_info['vel']
+            try:
+                if particle_path.endswith('.ply'):
+                    # 处理PLY文件格式
+                    from plyfile import PlyData
+                    plydata = PlyData.read(particle_path)
+                    # 提取xyz坐标作为粒子位置
+                    particle_pos = np.stack((
+                        np.asarray(plydata.elements[0]["x"]),
+                        np.asarray(plydata.elements[0]["y"]),
+                        np.asarray(plydata.elements[0]["z"])
+                    ), axis=1)
+                    # 速度设置为0
+                    particle_vel = np.zeros_like(particle_pos)
+                else:
+                    # 处理NPZ文件格式
+                    particle_info = np.load(particle_path)
+                    particle_pos = particle_info['pos']
+                    particle_vel = particle_info['vel']
+            except FileNotFoundError:
+                particle_pos = None
+                particle_vel = None
         else:
             raise NotImplementedError('please enter correct data type')
         # import ipdb;ipdb.set_trace()
         # particle_pos = torch.from_numpy(particle_pos).float()
         # particle_vel = torch.from_numpy(particle_vel).float()
         return particle_pos, particle_vel
-
 
     def __getitem__(self, index):
         # rays = self.all_rays_mv[:, index]
@@ -163,16 +189,20 @@ class BlenderDataset(Dataset):
         data['rays'] = torch.from_numpy(self.all_rays_mv[:, index]).float()
         data['box'] = torch.from_numpy(self.box).float()
         data['box_normals'] = torch.from_numpy(self.box_normals).float()
-        data['particles_pos'] = torch.from_numpy(self.particles_poss_mv[0, index]).float()
-        data['particles_vel'] = torch.from_numpy(self.particles_vels_mv[0, index]).float()
+        data['particles_pos'] = torch.from_numpy(self.particles_poss_mv[0, index]).float() \
+            if self.particles_poss_mv[0, index] is not None else torch.zeros_like(data['box'])
+        data['particles_vel'] = torch.from_numpy(self.particles_vels_mv[0, index]).float() \
+            if self.particles_vels_mv[0, index] is not None else torch.zeros_like(data['box_normals'])
         data['focal'] = self.focal_mv
         # data['view_name'] = self.viewnames
         # if index < self.all_rgbs_mv.shape[1]:
         data['cw_1'] = torch.from_numpy(self.all_cw_mv[:,index+1]).float()
         data['rays_1'] = torch.from_numpy(self.all_rays_mv[:, index+1]).float()
         data['rgb_1'] = torch.from_numpy(self.all_rgbs_mv[:, index+1]).float()
-        data['particles_pos_1'] = torch.from_numpy(self.particles_poss_mv[0, index+1]).float()
-        data['particles_vel_1'] = torch.from_numpy(self.particles_vels_mv[0, index+1]).float()
+        data['particles_pos_1'] = torch.from_numpy(self.particles_poss_mv[0, index+1]).float() \
+            if self.particles_poss_mv.shape[1] > 1 and self.particles_poss_mv[0, index+1] is not None else torch.zeros_like(data['box'])
+        data['particles_vel_1'] = torch.from_numpy(self.particles_vels_mv[0, index+1]).float() \
+            if self.particles_vels_mv.shape[1] > 1 and self.particles_vels_mv[0, index+1] is not None else torch.zeros_like(data['box_normals'])
         return data
 
     def __len__(self):

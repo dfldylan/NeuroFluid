@@ -1,8 +1,8 @@
 TRAIN:
   seed: 10
   partial_load: False
-  pretained_renderer: 'exps/watercube/warmup/models/99999.pt'
-  pretrained_transition_model: '/data/syguan/fluid_simulation/release/ckpts/trans/transv3_694999.pt' # '/data/syguan/fluid_simulation/release/ckpts/trans/dlf.pt'
+  pretained_renderer: '/workspace/NeuroFluid/data/exps/lava/scale-1.0/e2e/models/13899.pt'
+  pretrained_transition_model: '/workspace/NeuroFluid/data/exps/lava/scale-1.0/e2e/models/13899.pt' # '/data/syguan/fluid_simulation/release/ckpts/trans/dlf.pt'
   seperate_render_transition: True # seperate set learning scheduler for renderer and transition model
   LR:
     trans_lr: 1.0e-5
@@ -14,16 +14,16 @@ TRAIN:
   precrop_iters: 500
   save_interval: 500
   log_interval: 10
-  imgW: 400
-  imgH: 400
+  imgW: 640
+  imgH: 360
   scale: 1.0
   grad_clip_value: 0
   loss_weight: 
     boundary_loss: 1.0
 
 TEST:
-  imgW: 400
-  imgH: 400
+  imgW: 640
+  imgH: 360
   scale: 1.0
   start_index: 0
   end_index: 50

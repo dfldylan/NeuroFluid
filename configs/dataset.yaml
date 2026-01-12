@@ -29,16 +29,16 @@ watersphere:
     - -9.81 
   train:
     start_index: 0
-    end_index: 50
+    end_index: 20
     path: watersphere
     views:
-      warmup: [view_1,view_2,view_3,view_4]
-      dynamic: [view_1]
+      warmup: [view_1,view_2,view_3,view_4,view_5]
+      dynamic: [view_4]
   test:
-    start_index: 0
+    start_index: 20
     end_index: 60
     path: watersphere
-    views: [view_5]
+    views: [view_4]
 
 honeycone:
   data_type: splishsplash
@@ -60,3 +60,25 @@ honeycone:
     end_index: 60
     path: honeycone
     views: [view_5]
+
+lava:
+  data_type: splishsplash
+  near: 9.0
+  far: 13.0
+  gravity:
+    - 0.
+    - 0.
+    - 0.
+  train:
+    start_index: 0
+    end_index: 10
+    path: lava
+    views:
+      warmup: [ view_1 ]
+      dynamic: [ view_1 ]
+  test:
+    start_index: 0
+    end_index: 10
+    path: lava
+    views: [ view_1 ]
+

@@ -86,7 +86,7 @@ def end2end_training_config() -> CN:
     cfg.update(cfg_argparse)
     cfg.freeze()
 
-    os.makedirs(os.path.join(cfg_argparse['expdir'], cfg_argparse['expname']))
+    os.makedirs(os.path.join(cfg_argparse['expdir'], cfg_argparse['expname']),exist_ok=True)
     _savepath = os.path.join(cfg_argparse['expdir'], cfg_argparse['expname'], 'config.yaml')
     save_config(cfg, _savepath)
 
